@@ -122,55 +122,6 @@ export function ErrorBoundary({
 }
 
 // Specific Error Boundaries for different parts of the app
-export function AuthErrorBoundary({ children }: { children: React.ReactNode }) {
-  const AuthErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <div className="text-center">
-          <div className="mb-6">
-            <BugOutlined className="text-5xl text-red-500 mb-4" />
-            <Title level={3} className="text-red-600 mb-2">
-              Authentication Error
-            </Title>
-            <Paragraph className="text-gray-600 mb-6">
-              There was a problem with the authentication system. Please try signing in again.
-            </Paragraph>
-          </div>
-
-          <div className="space-y-3">
-            <Button
-              type="primary"
-              icon={<ReloadOutlined />}
-              onClick={resetErrorBoundary}
-              size="large"
-              className="w-full"
-            >
-              Retry Authentication
-            </Button>
-            
-            <Button
-              icon={<HomeOutlined />}
-              onClick={() => window.location.href = '/auth/login'}
-              size="large"
-              className="w-full"
-            >
-              Go to Login
-            </Button>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
-
-  return (
-    <ReactErrorBoundary
-      FallbackComponent={AuthErrorFallback}
-      onError={logErrorToService}
-    >
-      {children}
-    </ReactErrorBoundary>
-  );
-}
 
 export function DashboardErrorBoundary({ children }: { children: React.ReactNode }) {
   const DashboardErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => (

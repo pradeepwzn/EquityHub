@@ -37,3 +37,4 @@ NODE_ENV=development
 - The application will work with mock data if Supabase is not configured
 - Never commit the `.env.local` file to version control
 
+

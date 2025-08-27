@@ -1,143 +1,83 @@
 'use client';
 
-import React, { useMemo, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { DashboardErrorBoundary } from '@/components/ErrorBoundary';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
+import CompaniesList from '@/components/dashboard/CompaniesList';
+import { useRouter } from 'next/navigation';
 
-
-
-function DashboardPageContent() {
-  const router = useRouter();
+export default function DashboardPage() {
   const { user, loading, signOut } = useAuth();
-  const { handleError } = useErrorHandler();
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const router = useRouter();
 
-  // Redirect to user-specific dashboard
-  useEffect(() => {
-    if (isRedirecting) return; // Prevent multiple redirects
-    
-    try {
-      if (user?.id) {
-        console.log('User authenticated, redirecting to dashboard:', user.id);
-        setIsRedirecting(true);
-        // Use replace to prevent back button issues and avoid loops
-        router.replace(`/dashboard/${user.id}`);
-      } else if (!loading) {
-        console.log('No user found, redirecting to login');
-        setIsRedirecting(true);
-        // If no user and not loading, redirect to login
-        router.replace('/auth/login');
-      }
-    } catch (error) {
-      console.error('Error in dashboard redirect:', error);
-      handleError(error as Error);
-      setIsRedirecting(false);
+  // Redirect to login if not authenticated
+  React.useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth/login');
     }
-  }, [user?.id, loading, router, handleError, isRedirecting]);
+  }, [user, loading, router]);
 
-  // Memory optimization - temporarily disabled
-  // const { addCleanup, cleanupMemory, isMemoryPressure } = useMemoryOptimization({
-  //   maxCacheSize: 50,
-  //   cleanupInterval: 20000, // 20 seconds
-  //   enableGarbageCollection: true
-  // });
-
-
-
-  // Check if Supabase is configured (optional for development)
-  const isSupabaseConfigured = useMemo(() => {
-    return Boolean(
-      process.env.NEXT_PUBLIC_SUPABASE_URL && 
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
     );
-  }, []);
+  }
 
-
-
-  // Memory cleanup on component unmount - temporarily disabled
-  // React.useEffect(() => {
-  //   const cleanup = () => {
-  //     cleanupMemory();
-  //   };
-
-  //   addCleanup(cleanup);
-
-  //   return () => {
-  //     cleanup();
-  //   };
-  // }, [addCleanup, cleanupMemory]);
-
-  // Aggressive cleanup when memory pressure is high - temporarily disabled
-  // React.useEffect(() => {
-  //   if (isMemoryPressure) {
-  //     cleanupMemory();
-      
-  //     // Force garbage collection if available
-  //     if ('gc' in window) {
-  //       try {
-  //         (window as any).gc();
-  //       } catch (error) {
-  //         // GC not available
-  //       }
-  //     }
-  //   }
-  // }, [isMemoryPressure, cleanupMemory]);
-
-
-
-  // Show warning if Supabase is not configured (but don't block the app)
-  if (!isSupabaseConfigured && process.env.NODE_ENV === 'development') {
-    console.warn('Supabase not configured - using mock data');
+  if (!user) {
+    return null; // Will redirect to login
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Simple Dashboard Content for Testing */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Dashboard</h1>
-          <p className="text-gray-600 mb-4">Welcome to your dashboard!</p>
-          
-          {user ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-800">
-                ✅ Logged in as: <strong>{user.email}</strong>
-              </p>
-              <p className="text-green-700 text-sm mt-1">
-                User ID: {user.id}
+      {/* Header with user info and logout */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Startup Value Simulator</h1>
+              <p className="text-sm text-gray-600">
+                Welcome back, {user.username || user.email}
               </p>
             </div>
-          ) : (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-yellow-800">
-                ⚠️ No user logged in
-              </p>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-500">User ID: {user.id}</span>
+              <button
+                onClick={signOut}
+                className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                Sign Out
+              </button>
             </div>
-          )}
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Your Companies</h2>
+            <p className="mt-2 text-gray-600">
+              View and manage your startup companies below.
+            </p>
+          </div>
           
-          <div className="mt-6">
-            <button
-              onClick={async () => {
-                await signOut();
-                window.location.href = '/auth/login';
-              }}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Sign Out
-            </button>
+          {/* Companies List for the logged-in user */}
+          <div className="bg-white shadow rounded-lg">
+            <CompaniesList userId={user.id} />
+          </div>
+
+          {/* Debug Info */}
+          <div className="mt-8 bg-gray-50 rounded-lg p-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Debug Information</h3>
+            <div className="text-sm text-gray-600 space-y-1">
+              <p><strong>User ID:</strong> {user.id}</p>
+              <p><strong>Email:</strong> {user.email}</p>
+              <p><strong>Username:</strong> {user.username || 'Not set'}</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-export default function DashboardPage() {
-  return (
-    <DashboardErrorBoundary>
-      <DashboardPageContent />
-    </DashboardErrorBoundary>
   );
 }

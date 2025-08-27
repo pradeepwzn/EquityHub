@@ -1,54 +1,91 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the current user from the request
-    const authHeader = request.headers.get('authorization');
-    
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      // You could get the user ID from session or query params
-      // For now, we'll query all data
-    }
+    // Return mock data since we don't have a real database connection
+    const mockData = {
+      companies: [
+        {
+          id: 'company-1',
+          name: 'Tech Startup Inc',
+          user_id: 'user-1',
+          total_shares: 1000000,
+          valuation: 5000000,
+          esop_pool: 100000,
+          status: 'active',
+          created_at: '2025-01-01T00:00:00Z',
+          updated_at: '2025-01-01T00:00:00Z'
+        },
+        {
+          id: 'company-2',
+          name: 'Innovation Labs',
+          user_id: 'user-1',
+          total_shares: 2000000,
+          valuation: 10000000,
+          esop_pool: 200000,
+          status: 'active',
+          created_at: '2025-01-01T00:00:00Z',
+          updated_at: '2025-01-01T00:00:00Z'
+        }
+      ],
+      founders: [
+        {
+          id: 'founder-1',
+          company_id: 'company-1',
+          name: 'John Doe',
+          initial_ownership: 80,
+          current_ownership: 60,
+          shares: 800000,
+          created_at: '2025-01-01T00:00:00Z',
+          updated_at: '2025-01-01T00:00:00Z'
+        },
+        {
+          id: 'founder-2',
+          company_id: 'company-1',
+          name: 'Jane Smith',
+          initial_ownership: 20,
+          current_ownership: 15,
+          shares: 200000,
+          created_at: '2025-01-01T00:00:00Z',
+          updated_at: '2025-01-01T00:00:00Z'
+        }
+      ],
+      funding_rounds: [
+        {
+          id: 'round-1',
+          company_id: 'company-1',
+          name: 'Seed Round',
+          investment_amount: 1000000,
+          pre_money_valuation: 4000000,
+          post_money_valuation: 5000000,
+          shares_issued: 200000,
+          price_per_share: 5,
+          order: 1,
+          created_at: '2025-01-01T00:00:00Z',
+          updated_at: '2025-01-01T00:00:00Z'
+        }
+      ],
+      users: [
+        {
+          id: 'user-1',
+          username: 'Demo User',
+          email: 'demo@example.com',
+          created_at: '2025-01-01T00:00:00Z',
+          updated_at: '2025-01-01T00:00:00Z'
+        }
+      ]
+    };
 
-    // Query all tables to see what data exists
-    const [companiesResult, foundersResult, fundingRoundsResult, usersResult] = await Promise.all([
-      supabase.from('companies').select('*'),
-      supabase.from('founders').select('*'),
-      supabase.from('funding_rounds').select('*'),
-      supabase.from('users').select('*'),
-    ]);
-
-    // Check for errors
-    const errors = [];
-    if (companiesResult.error) errors.push(`Companies: ${companiesResult.error.message}`);
-    if (foundersResult.error) errors.push(`Founders: ${foundersResult.error.message}`);
-    if (fundingRoundsResult.error) errors.push(`Funding Rounds: ${fundingRoundsResult.error.message}`);
-    if (usersResult.error) errors.push(`Users: ${usersResult.error.message}`);
-
-    if (errors.length > 0) {
-      return NextResponse.json({
-        success: false,
-        errors,
-        message: 'Database query errors occurred'
-      }, { status: 500 });
-    }
-
-    // Return the data
     return NextResponse.json({
       success: true,
-      data: {
-        companies: companiesResult.data || [],
-        founders: foundersResult.data || [],
-        fundingRounds: fundingRoundsResult.data || [],
-        users: usersResult.data || [],
-      },
+      data: mockData,
       counts: {
-        companies: (companiesResult.data || []).length,
-        founders: (foundersResult.data || []).length,
-        fundingRounds: (fundingRoundsResult.data || []).length,
-        users: (usersResult.data || []).length,
-      }
+        companies: mockData.companies.length,
+        founders: mockData.founders.length,
+        fundingRounds: mockData.funding_rounds.length,
+        users: mockData.users.length,
+      },
+      message: 'Mock data returned (no real database connection)'
     });
 
   } catch (error) {
@@ -56,7 +93,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
-      message: 'Failed to query database'
+      message: 'Failed to return mock data'
     }, { status: 500 });
   }
 }

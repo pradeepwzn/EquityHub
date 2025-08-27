@@ -40,7 +40,7 @@ import ScenarioComparisonTab from '@/components/dashboard/ScenarioComparisonTab'
 import ScenarioTimeline from '@/components/dashboard/ScenarioTimeline';
 import FounderAccountTab from '@/components/dashboard/FounderAccountTab';
 import ESOPTab from '@/components/dashboard/ESOPTab';
-import SQLEditorTab from '@/components/dashboard/SQLEditorTab';
+// SQL Editor removed since we don't have database connection
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -217,13 +217,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = React.memo(({
         />
       ),
     },
-    {
-      key: 'sql-editor',
-      label: 'SQL Editor',
-      children: (
-        <SQLEditorTab />
-      ),
-    },
+
   ], [
     company, 
     founders, 

@@ -1,38 +1,21 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-// Check if environment variables are set (only in development)
-if (process.env.NODE_ENV === 'development') {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Missing Supabase environment variables:');
-    console.warn('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✓ Set' : '✗ Missing');
-    console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✓ Set' : '✗ Missing');
-    console.warn('Please create a .env.local file with these variables.');
-  }
-}
-
-// Create Supabase client with fallback
+// Simple Supabase configuration to avoid webpack issues
 let supabase: any;
 
-if (supabaseUrl && supabaseAnonKey) {
-  try {
+try {
+  const { createClient } = require('@supabase/supabase-js');
+  
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (supabaseUrl && supabaseAnonKey) {
     supabase = createClient(supabaseUrl, supabaseAnonKey);
-  } catch (error) {
-    console.error('Failed to create Supabase client:', error);
-    // Fall back to mock client
-    supabase = createMockClient();
-  }
-} else {
-  // Create a mock client for development when env vars are missing
-  if (process.env.NODE_ENV === 'development') {
-    console.warn('Creating mock Supabase client due to missing environment variables');
-    supabase = createMockClient();
   } else {
-    // In production, throw an error if Supabase is not configured
-    throw new Error('Supabase environment variables are required in production');
+    // Fallback to mock client
+    supabase = createMockClient();
   }
+} catch (error) {
+  console.warn('Supabase client creation failed, using mock client:', error);
+  supabase = createMockClient();
 }
 
 function createMockClient() {
@@ -40,14 +23,14 @@ function createMockClient() {
     auth: {
       getSession: async () => ({ data: { session: null }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-      signUp: async () => ({ data: null, error: new Error('Supabase not configured') }),
-      signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured') }),
+      signInWithPassword: async () => ({ data: null, error: new Error('Mock client - not configured') }),
+      signUp: async () => ({ data: null, error: new Error('Mock client - not configured') }),
       signOut: async () => {},
-      resetPasswordForEmail: async () => ({ error: new Error('Supabase not configured') })
+      resetPasswordForEmail: async () => ({ error: new Error('Mock client - not configured') })
     },
     from: () => ({
-      insert: async () => ({ error: new Error('Supabase not configured') }),
-      select: async () => ({ data: null, error: new Error('Supabase not configured') })
+      insert: async () => ({ error: new Error('Mock client - not configured') }),
+      select: async () => ({ data: null, error: new Error('Mock client - not configured') })
     })
   };
 }
@@ -299,5 +282,67 @@ export async function testSupabaseConnection() {
   } catch (error) {
     console.error('Supabase connection test error:', error);
     return false;
+  }
+}
+
+// Function to read companies from the database
+export async function getCompanies() {
+  try {
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching companies:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Failed to fetch companies:', error);
+    throw error;
+  }
+}
+
+// Function to read companies for a specific user
+export async function getUserCompanies(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user companies:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Failed to fetch user companies:', error);
+    throw error;
+  }
+}
+
+// Function to read a specific company by ID
+export async function getCompanyById(companyId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*')
+      .eq('id', companyId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching company:', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch company:', error);
+    throw error;
   }
 }

@@ -28,15 +28,7 @@ export function useErrorHandler() {
     });
   }, []);
 
-  const handleAuthError = useCallback((error: any) => {
-    console.error('Authentication error:', error);
-    
-    // Log the error but don't throw it
-    console.error('Authentication Error details:', {
-      message: error?.message,
-      type: 'authentication'
-    });
-  }, []);
+
 
   const handleNetworkError = useCallback((error: any) => {
     console.error('Network error:', error);
@@ -53,7 +45,6 @@ export function useErrorHandler() {
     handleAsyncError,
     handlePromiseRejection,
     handleApiError,
-    handleAuthError,
     handleNetworkError,
   };
 }
