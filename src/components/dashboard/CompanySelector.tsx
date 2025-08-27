@@ -51,7 +51,10 @@ const CompanyCard: React.FC<CompanyCardProps> = React.memo(({
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => onSelect(company)}
+      onClick={() => {
+        console.log('CompanyCard clicked:', company);
+        onSelect(company);
+      }}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-4 flex-1">
@@ -144,7 +147,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ onCompanySelect, onCr
   const router = useRouter();
 
   const { setCompany, clearCompany, loadUserCompanies: storeLoadUserCompanies } = useSimulatorStore();
-  const { session } = useAuth();
+  const { session, user } = useAuth();
 
   // Load user companies on component mount
   useEffect(() => {
@@ -173,6 +176,7 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ onCompanySelect, onCr
       }
 
       const { companies } = await response.json();
+      console.log('Companies loaded from API:', companies);
       setCompanies(companies || []);
       
       // Also load companies into the store
@@ -186,14 +190,42 @@ const CompanySelector: React.FC<CompanySelectorProps> = ({ onCompanySelect, onCr
   };
 
   const handleCompanySelect = (company: Company) => {
-    setSelectedCompany(company);
-    setCompany(company);
-    onCompanySelect(company);
-    message.success(`Opening ${company.name} dashboard...`);
-    
-    // Navigate to user-specific company URL
-    const userId = company.user_id || 'me';
-    router.push(`/dashboard/${userId}/${company.id}?tab=company`);
+    try {
+      console.log('Company selected:', company);
+      console.log('Current user:', user);
+      
+      if (!company || !company.id) {
+        console.error('Invalid company data:', company);
+        message.error('Invalid company data');
+        return;
+      }
+      
+      setSelectedCompany(company);
+      setCompany(company);
+      onCompanySelect(company);
+      message.success(`Opening ${company.name} dashboard...`);
+      
+      // Navigate to user-specific company URL
+      const userId = company.user_id || user?.id || 'me';
+      const targetUrl = `/dashboard/${userId}/${company.id}?tab=company`;
+      
+      console.log('Navigating to:', targetUrl);
+      console.log('Router object:', router);
+      
+      router.push(targetUrl);
+      
+      // Add a fallback navigation
+      setTimeout(() => {
+        if (window.location.pathname !== targetUrl) {
+          console.log('Router navigation failed, using window.location');
+          window.location.href = targetUrl;
+        }
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error in handleCompanySelect:', error);
+      message.error('Failed to open company dashboard');
+    }
   };
 
   const handleCreateCompany = async (values: any) => {

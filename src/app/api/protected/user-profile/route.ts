@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createProtectedRoute } from '@/lib/jwt-utils';
 import { supabase } from '@/lib/supabase';
 
-// Example protected API route that requires authentication
-export const GET = createProtectedRoute(async (request: NextRequest, userId: string) => {
+// GET /api/protected/user-profile?userId=xxx
+export async function GET(request: NextRequest) {
   try {
+    const userId = request.nextUrl.searchParams.get('userId');
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 401 }
+      );
+    }
+
     // Fetch user profile from database
     const { data: userProfile, error } = await supabase
       .from('users')
@@ -38,11 +46,20 @@ export const GET = createProtectedRoute(async (request: NextRequest, userId: str
       { status: 500 }
     );
   }
-});
+}
 
-// Example of updating user profile
-export const PUT = createProtectedRoute(async (request: NextRequest, userId: string) => {
+// PUT /api/protected/user-profile?userId=xxx
+export async function PUT(request: NextRequest) {
   try {
+    const userId = request.nextUrl.searchParams.get('userId');
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { username, email } = body;
 
@@ -86,4 +103,4 @@ export const PUT = createProtectedRoute(async (request: NextRequest, userId: str
       { status: 500 }
     );
   }
-});
+}

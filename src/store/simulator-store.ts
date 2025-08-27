@@ -8,6 +8,7 @@ import {
   ExitResults,
   OwnershipBreakdown
 } from '@/types';
+import { supabase } from '@/lib/supabase';
 
 interface SimulatorStore {
   // Company Data
@@ -153,23 +154,12 @@ export const useSimulatorStore = create<SimulatorStore>()(
         loadUserCompanies: async (userId: string) => {
           set({ isLoading: true, error: null });
           try {
-            // Get JWT token from Supabase session
-            let token = '';
-            if (typeof window !== 'undefined') {
-              // Try to get token from Supabase session
-              const { data: { session } } = await import('@/lib/supabase').then(m => m.supabase.auth.getSession());
-              token = session?.access_token || '';
-            }
-            
-            if (!token) {
-              throw new Error('No authentication token found');
-            }
+            // Session-based authentication - no token needed
 
             // Fetch companies from API
-            const response = await fetch('/api/protected/companies', {
+            const response = await fetch(`/api/protected/companies?userId=${userId}`, {
               method: 'GET',
               headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
               }
             });

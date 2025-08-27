@@ -17,9 +17,15 @@ interface PerformanceMetrics {
 const PerformanceMonitor: React.FC = () => {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [isDevelopment, setIsDevelopment] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Only show in development
+    setIsClient(true);
+    // Check if we're in development mode
+    setIsDevelopment(process.env.NODE_ENV === 'development');
+    
+    // Only proceed if in development
     if (process.env.NODE_ENV !== 'development') return;
 
     const measurePerformance = () => {
@@ -56,7 +62,10 @@ const PerformanceMonitor: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (!metrics || process.env.NODE_ENV !== 'development') return null;
+  // Don't render anything until we've determined the environment
+  if (!isDevelopment) return null;
+  
+  if (!metrics) return null;
 
   const getPerformanceColor = (time: number) => {
     if (time < 1000) return '#16a34a'; // Green
@@ -71,12 +80,16 @@ const PerformanceMonitor: React.FC = () => {
     return 'Poor';
   };
 
+  // Don't render on server-side
+  if (!isClient || !isDevelopment) {
+    return null;
+  }
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
       <Card 
         size="small" 
-        className="shadow-lg border-0 rounded-xl bg-white/95 backdrop-blur-sm"
-        style={{ width: 300 }}
+        className="shadow-lg border-0 rounded-xl bg-white/95 backdrop-blur-sm performance-monitor-card"
         title={
           <div className="flex items-center space-x-2">
             <RocketOutlined className="text-blue-600" />
@@ -99,7 +112,7 @@ const PerformanceMonitor: React.FC = () => {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <Text className="text-xs text-slate-600">Page Load Time</Text>
-                <Text className="text-xs font-medium" style={{ color: getPerformanceColor(metrics.pageLoadTime) }}>
+                <Text className={`text-xs font-medium ${getPerformanceColor(metrics.pageLoadTime) === '#16a34a' ? 'performance-time-excellent' : getPerformanceColor(metrics.pageLoadTime) === '#f59e0b' ? 'performance-time-good' : 'performance-time-poor'}`}>
                   {metrics.pageLoadTime.toFixed(0)}ms
                 </Text>
               </div>

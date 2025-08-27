@@ -1,77 +1,41 @@
 'use client';
 
-import React, { Suspense, lazy, useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCompany, useFounders, useFundingRounds, useScenarios, useIsLoading } from '@/hooks/useSimulatorStoreOptimized';
-// import { useMemoryOptimization } from '@/hooks/useMemoryOptimization';
-
-import { usePerformanceMonitor } from '@/hooks/usePerformance';
 import { useAuth } from '@/contexts/AuthContext';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import { DashboardErrorBoundary } from '@/components/ErrorBoundary';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 
-// Lazy load dashboard components
-const DashboardHeader = lazy(() => import('@/components/dashboard/DashboardHeader'));
-const DashboardTabs = lazy(() => import('@/components/dashboard/DashboardTabs'));
-const PerformanceMonitor = lazy(() => import('@/components/PerformanceMonitor'));
-const CompanySelector = lazy(() => import('@/components/dashboard/CompanySelector'));
 
-// Loading skeleton
-const DashboardSkeleton = () => (
-  <div className="animate-pulse min-h-screen bg-gray-50">
-    {/* Header skeleton */}
-    <div className="bg-white shadow-sm border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between">
-          <div className="h-8 bg-slate-200 rounded w-48"></div>
-          <div className="flex space-x-4">
-            <div className="h-8 bg-slate-200 rounded w-24"></div>
-            <div className="h-8 bg-slate-200 rounded w-24"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    {/* Main content skeleton */}
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Left sidebar skeleton */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="h-6 bg-slate-200 rounded w-32 mb-4"></div>
-            <div className="space-y-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-4 bg-slate-200 rounded w-full"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-        
-        {/* Main content skeleton */}
-        <div className="lg:col-span-3">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="h-8 bg-slate-200 rounded w-48 mb-6"></div>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-20 bg-slate-200 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading, signOut } = useAuth();
+  const { handleError } = useErrorHandler();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Redirect to user-specific dashboard
   useEffect(() => {
-    if (user?.id) {
-      router.push(`/dashboard/${user.id}`);
+    if (isRedirecting) return; // Prevent multiple redirects
+    
+    try {
+      if (user?.id) {
+        console.log('User authenticated, redirecting to dashboard:', user.id);
+        setIsRedirecting(true);
+        // Use replace to prevent back button issues and avoid loops
+        router.replace(`/dashboard/${user.id}`);
+      } else if (!loading) {
+        console.log('No user found, redirecting to login');
+        setIsRedirecting(true);
+        // If no user and not loading, redirect to login
+        router.replace('/auth/login');
+      }
+    } catch (error) {
+      console.error('Error in dashboard redirect:', error);
+      handleError(error as Error);
+      setIsRedirecting(false);
     }
-  }, [user?.id, router]);
+  }, [user?.id, loading, router, handleError, isRedirecting]);
 
   // Memory optimization - temporarily disabled
   // const { addCleanup, cleanupMemory, isMemoryPressure } = useMemoryOptimization({
@@ -80,18 +44,9 @@ export default function DashboardPage() {
   //   enableGarbageCollection: true
   // });
 
-  // Performance monitoring
-  const { metrics } = usePerformanceMonitor();
-  const { renderTime, memoryUsage, componentCount } = metrics;
 
-  // Simulator store with optimization
-  const company = useCompany();
-  const founders = useFounders();
-  const fundingRounds = useFundingRounds();
-  const scenarios = useScenarios();
-  const isLoading = useIsLoading();
 
-  // Check if Supabase is configured
+  // Check if Supabase is configured (optional for development)
   const isSupabaseConfigured = useMemo(() => {
     return Boolean(
       process.env.NEXT_PUBLIC_SUPABASE_URL && 
@@ -130,110 +85,59 @@ export default function DashboardPage() {
   //   }
   // }, [isMemoryPressure, cleanupMemory]);
 
-  // Show loading state
-  if (isLoading) {
-    return <DashboardSkeleton />;
-  }
 
-  // Show error if Supabase is not configured
-  if (!isSupabaseConfigured) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-          <div className="text-center">
-            <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Configuration Error
-            </h1>
-            <p className="text-gray-600 mb-6">
-              Supabase configuration is missing. Please check your environment variables.
-            </p>
-            <div className="bg-gray-100 p-4 rounded text-sm text-gray-700 font-mono">
-              NEXT_PUBLIC_SUPABASE_URL<br />
-              NEXT_PUBLIC_SUPABASE_ANON_KEY
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+
+  // Show warning if Supabase is not configured (but don't block the app)
+  if (!isSupabaseConfigured && process.env.NODE_ENV === 'development') {
+    console.warn('Supabase not configured - using mock data');
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
-        {/* Performance Monitor */}
-        <Suspense fallback={<div className="h-8 bg-slate-200"></div>}>
-          <PerformanceMonitor />
-        </Suspense>
-
-        {/* Dashboard Header */}
-        <Suspense fallback={
-          <div className="bg-white shadow-sm border-b">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-              <div className="h-8 bg-slate-200 rounded w-48"></div>
-            </div>
-          </div>
-        }>
-          <DashboardHeader 
-            company={company}
-            founders={founders}
-            fundingRounds={fundingRounds}
-            onSignOut={() => {}} // TODO: Implement sign out
-          />
-        </Suspense>
-
-        {/* Main Dashboard Content */}
-        <div className="w-full">
-          {!company ? (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <Suspense fallback={<DashboardSkeleton />}>
-                <CompanySelector 
-                  onCompanySelect={(selectedCompany: any) => {
-                    // Company will be set in the store automatically
-                  }}
-                  onCreateCompany={() => {
-                    // Modal will open automatically
-                  }}
-                />
-              </Suspense>
+    <div className="min-h-screen bg-gray-50">
+      {/* Simple Dashboard Content for Testing */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Dashboard</h1>
+          <p className="text-gray-600 mb-4">Welcome to your dashboard!</p>
+          
+          {user ? (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-800">
+                ✅ Logged in as: <strong>{user.email}</strong>
+              </p>
+              <p className="text-green-700 text-sm mt-1">
+                User ID: {user.id}
+              </p>
             </div>
           ) : (
-            <div className="w-full">
-              <Suspense fallback={<DashboardSkeleton />}>
-                <DashboardTabs 
-                  activeTab="company"
-                  company={company}
-                  founders={founders}
-                  fundingRounds={fundingRounds}
-                  exitResults={null}
-                  scenarios={scenarios}
-                  onTabChange={() => {}}
-                  onCompanySubmit={() => {}}
-                  onFounderSubmit={() => {}}
-                  onRoundSubmit={() => {}}
-                  onUpdateAndRecalculate={() => {}}
-                  onRemoveFounder={() => {}}
-                  onRemoveFundingRound={() => {}}
-                  onSetExitValue={() => {}}
-                  onSetESOPAllocation={() => {}}
-                />
-              </Suspense>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p className="text-yellow-800">
+                ⚠️ No user logged in
+              </p>
             </div>
           )}
-        </div>
-
-        {/* Memory Usage Indicator (only in development) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white p-3 rounded-lg text-sm">
-            <div>Memory: {memoryUsage?.toFixed(1)}%</div>
-            <div>Render: {renderTime?.toFixed(1)}ms</div>
-            <div>Components: {componentCount}</div>
-            {/* {isMemoryPressure && (
-              <div className="text-red-400 font-bold">⚠️ Memory Pressure</div>
-            )} */}
+          
+          <div className="mt-6">
+            <button
+              onClick={async () => {
+                await signOut();
+                window.location.href = '/auth/login';
+              }}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Sign Out
+            </button>
           </div>
-        )}
+        </div>
       </div>
-    </ProtectedRoute>
+    </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <DashboardErrorBoundary>
+      <DashboardPageContent />
+    </DashboardErrorBoundary>
   );
 }

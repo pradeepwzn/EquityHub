@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, lazy, useMemo, useEffect } from 'react';
+import React, { Suspense, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useCompany, useFounders, useFundingRounds, useScenarios, useIsLoading } from '@/hooks/useSimulatorStoreOptimized';
 // import { useMemoryOptimization } from '@/hooks/useMemoryOptimization';
@@ -8,13 +8,12 @@ import { useCompany, useFounders, useFundingRounds, useScenarios, useIsLoading }
 import { usePerformanceMonitor } from '@/hooks/usePerformance';
 import { useSimulatorStore } from '@/store/simulator-store';
 import { useAuth } from '@/contexts/AuthContext';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import { Company } from '@/types';
 
-// Lazy load dashboard componeis nts
-const DashboardHeader = lazy(() => import('@/components/dashboard/DashboardHeader'));
-const DashboardTabs = lazy(() => import('@/components/dashboard/DashboardTabs'));
-const PerformanceMonitor = lazy(() => import('@/components/PerformanceMonitor'));
+// Import dashboard components directly to fix webpack loading issues
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import DashboardTabs from '@/components/dashboard/DashboardTabs';
+import PerformanceMonitor from '@/components/PerformanceMonitor';
 
 // Loading skeleton
 const DashboardSkeleton = () => (
@@ -100,57 +99,75 @@ export default function UserCompanyDashboardPage() {
       router.push(`/dashboard/${user?.id || 'me'}`);
       return;
     }
-  }, [user?.id, userId, router]);
+  }, [user?.id, userId]); // Removed router from dependencies
 
   // Load specific company data for this user
   useEffect(() => {
     const loadCompanyData = async () => {
       if (!userId || !companyId) return;
 
-      // Mock company data - replace with actual API call
-      const mockCompanies: Company[] = [
-        {
-          id: '1',
-          name: 'TechStart Inc.',
-          total_shares: 10000000,
-          valuation: 5000000,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          user_id: userId // Associate company with user
-        },
-        {
-          id: '2',
-          name: 'InnovateCorp',
-          total_shares: 5000000,
-          valuation: 2000000,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          user_id: userId
-        },
-        {
-          id: '3',
-          name: 'StartupX',
-          total_shares: 8000000,
-          valuation: 3000000,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          user_id: userId
+      try {
+        // Load user's companies from API
+        const response = await fetch('/api/protected/companies');
+        if (!response.ok) {
+          throw new Error('Failed to load companies');
         }
-      ];
+        
+        const companies = await response.json();
+        const selectedCompany = companies.find((c: Company) => c.id === companyId && c.user_id === userId);
+        
+        if (selectedCompany) {
+          setCompany(selectedCompany);
+        } else {
+          // Company not found or doesn't belong to user, redirect to user's company selector
+          router.push(`/dashboard/${userId}`);
+        }
+      } catch (error) {
+        console.error('Error loading company data:', error);
+        // Fallback to mock data for development
+        const mockCompanies: Company[] = [
+          {
+            id: '1',
+            name: 'TechStart Inc.',
+            total_shares: 10000000,
+            valuation: 5000000,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_id: userId
+          },
+          {
+            id: '2',
+            name: 'InnovateCorp',
+            total_shares: 5000000,
+            valuation: 2000000,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_id: userId
+          },
+          {
+            id: '3',
+            name: 'StartupX',
+            total_shares: 8000000,
+            valuation: 3000000,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_id: userId
+          }
+        ];
 
-      const selectedCompany = mockCompanies.find(c => c.id === companyId && c.user_id === userId);
-      if (selectedCompany) {
-        setCompany(selectedCompany);
-      } else {
-        // Company not found or doesn't belong to user, redirect to user's company selector
-        router.push(`/dashboard/${userId}`);
+        const selectedCompany = mockCompanies.find(c => c.id === companyId && c.user_id === userId);
+        if (selectedCompany) {
+          setCompany(selectedCompany);
+        } else {
+          router.push(`/dashboard/${userId}`);
+        }
       }
     };
 
     if (userId && companyId && user?.id === userId) {
       loadCompanyData();
     }
-  }, [userId, companyId, user?.id, setCompany, router]);
+  }, [userId, companyId, user?.id, setCompany]); // Removed router from dependencies
 
   // Handle tab changes with URL updates
   const handleTabChange = (newTab: string) => {
@@ -204,7 +221,6 @@ export default function UserCompanyDashboardPage() {
   }
 
   return (
-    <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
         {/* Performance Monitor */}
         <Suspense fallback={<div className="h-8 bg-slate-200"></div>}>
@@ -253,7 +269,7 @@ export default function UserCompanyDashboardPage() {
         </div>
 
         {/* Memory Usage Indicator (only in development) */}
-        {process.env.NODE_ENV === 'development' && (
+        {typeof window !== 'undefined' && process.env.NODE_ENV === 'development' && (
           <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white p-3 rounded-lg text-sm">
             <div>User: {userId}</div>
             <div>Company: {company.name}</div>
@@ -268,7 +284,6 @@ export default function UserCompanyDashboardPage() {
           </div>
         )}
       </div>
-    </ProtectedRoute>
   );
 }
 

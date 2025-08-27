@@ -29,59 +29,18 @@ const ErrorBoundary: React.FC<{ children: React.ReactNode; fallback?: React.Reac
   }
 };
 
-// Dynamic imports for code splitting and faster initial load
-import dynamic from 'next/dynamic';
-
-// Lazy load heavy components
-const CompanyTab = dynamic(() => import('@/components/dashboard/CompanyTab'), {
-  loading: () => <div className="p-8 text-center">Loading Company...</div>,
-  ssr: false
-});
-
-const FoundersTab = dynamic(() => import('@/components/dashboard/FoundersTab'), {
-  loading: () => <div className="p-8 text-center">Loading Founders...</div>,
-  ssr: false
-});
-
-const FundingRoundsTab = dynamic(() => import('@/components/dashboard/FundingRoundsTab'), {
-  loading: () => <div className="p-8 text-center">Loading Funding Rounds...</div>,
-  ssr: false
-});
-
-const ResultsTab = dynamic(() => import('@/components/dashboard/ResultsTab'), {
-  loading: () => <div className="p-8 text-center">Loading Results...</div>,
-  ssr: false
-});
-
-const DatabaseDebugTab = dynamic(() => import('@/components/dashboard/DatabaseDebugTab'), {
-  loading: () => <div className="p-8 text-center">Loading Debug...</div>,
-  ssr: false
-});
-
-const ScenarioManager = dynamic(() => import('@/components/dashboard/ScenarioManager'), {
-  loading: () => <div className="p-8 text-center">Loading Scenarios...</div>,
-  ssr: false
-});
-
-const ScenarioComparisonTab = dynamic(() => import('@/components/dashboard/ScenarioComparisonTab'), {
-  loading: () => <div className="p-8 text-center">Loading Comparison...</div>,
-  ssr: false
-});
-
-const ScenarioTimeline = dynamic(() => import('@/components/dashboard/ScenarioTimeline'), {
-  loading: () => <div className="p-8 text-center">Loading Timeline...</div>,
-  ssr: false
-});
-
-const FounderAccountTab = dynamic(() => import('@/components/dashboard/FounderAccountTab'), {
-  loading: () => <div className="p-8 text-center">Loading Account...</div>,
-  ssr: false
-});
-
-const ESOPTab = dynamic(() => import('@/components/dashboard/ESOPTab'), {
-  loading: () => <div className="p-8 text-center">Loading ESOP...</div>,
-  ssr: false
-});
+// Direct imports to fix hydration issues
+import CompanyTab from '@/components/dashboard/CompanyTab';
+import FoundersTab from '@/components/dashboard/FoundersTab';
+import FundingRoundsTab from '@/components/dashboard/FundingRoundsTab';
+import ResultsTab from '@/components/dashboard/ResultsTab';
+import DatabaseDebugTab from '@/components/dashboard/DatabaseDebugTab';
+import ScenarioManager from '@/components/dashboard/ScenarioManager';
+import ScenarioComparisonTab from '@/components/dashboard/ScenarioComparisonTab';
+import ScenarioTimeline from '@/components/dashboard/ScenarioTimeline';
+import FounderAccountTab from '@/components/dashboard/FounderAccountTab';
+import ESOPTab from '@/components/dashboard/ESOPTab';
+import SQLEditorTab from '@/components/dashboard/SQLEditorTab';
 
 interface DashboardTabsProps {
   activeTab: string;
@@ -218,7 +177,8 @@ const DashboardTabs: React.FC<DashboardTabsProps> = React.memo(({
             valuation: company?.valuation
           }}
           onScenarioSelect={(scenario) => {
-            // TODO: Implement scenario loading
+            console.log('Scenario selected:', scenario);
+            // TODO: Implement scenario loading logic
           }}
         />
       ),
@@ -255,6 +215,13 @@ const DashboardTabs: React.FC<DashboardTabsProps> = React.memo(({
           founders={founders}
           fundingRounds={fundingRounds}
         />
+      ),
+    },
+    {
+      key: 'sql-editor',
+      label: 'SQL Editor',
+      children: (
+        <SQLEditorTab />
       ),
     },
   ], [

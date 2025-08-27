@@ -1,16 +1,11 @@
 'use client';
 
-import React, { useMemo, useState, useEffect, Suspense, lazy } from 'react';
+import React, { useMemo, useState, useEffect, Suspense } from 'react';
 import { Card, Typography, Progress, Row, Col, Statistic, InputNumber, Alert, Divider, Tag } from 'antd';
 import { TeamOutlined, DollarOutlined, PieChartOutlined, CalculatorOutlined, InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
 import { Company, Founder, FundingRound, ExitResults } from '@/types';
 
 const { Title, Text } = Typography;
-
-// Lazy load heavy components
-const LazyCard = lazy(() => Promise.resolve({ default: Card }));
-const LazyStatistic = lazy(() => Promise.resolve({ default: Statistic }));
-const LazyProgress = lazy(() => Promise.resolve({ default: Progress }));
 
 interface ESOPTabProps {
   company: Company | null;
@@ -132,7 +127,7 @@ const ESOPTab: React.FC<ESOPTabProps> = React.memo(({ company, founders, funding
     <div className="p-6 space-y-6">
       {/* ESOP Overview Header */}
       <Suspense fallback={<div className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>}>
-        <LazyCard className="shadow-lg border-0 rounded-2xl overflow-hidden">
+        <Card className="shadow-lg border-0 rounded-2xl overflow-hidden">
           <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 p-6 text-white">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center">
@@ -148,7 +143,7 @@ const ESOPTab: React.FC<ESOPTabProps> = React.memo(({ company, founders, funding
               </div>
             </div>
           </div>
-        </LazyCard>
+        </Card>
       </Suspense>
 
       {/* ESOP Pool Statistics */}
@@ -156,62 +151,62 @@ const ESOPTab: React.FC<ESOPTabProps> = React.memo(({ company, founders, funding
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} md={6}>
             <Suspense fallback={<div className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>}>
-              <LazyCard className="shadow-lg border-0 rounded-2xl text-center hover:shadow-xl transition-all duration-200">
+              <Card className="shadow-lg border-0 rounded-2xl text-center hover:shadow-xl transition-all duration-200">
                 <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <TeamOutlined className="text-2xl text-green-600" />
                 </div>
-                <LazyStatistic
+                <Statistic
                   title="ESOP Pool Size"
                   value={esopStats.esopPoolPercent}
                   suffix="%"
                   valueStyle={{ color: '#16a34a', fontSize: '1.5rem', fontWeight: 'bold' }}
                 />
-              </LazyCard>
+              </Card>
             </Suspense>
           </Col>
           
           <Col xs={24} sm={12} md={6}>
             <Suspense fallback={<div className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>}>
-              <LazyCard className="shadow-lg border-0 rounded-2xl text-center hover:shadow-xl transition-all duration-200">
+              <Card className="shadow-lg border-0 rounded-2xl text-center hover:shadow-xl transition-all duration-200">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <PieChartOutlined className="text-2xl text-blue-600" />
                 </div>
-                <LazyStatistic
+                <Statistic
                   title="ESOP Shares"
                   value={esopStats.esopShares.toLocaleString()}
                   valueStyle={{ color: '#2563eb', fontSize: '1.5rem', fontWeight: 'bold' }}
                 />
-              </LazyCard>
+              </Card>
             </Suspense>
           </Col>
           
           <Col xs={24} sm={12} md={6}>
             <Suspense fallback={<div className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>}>
-              <LazyCard className="shadow-lg border-0 rounded-2xl text-center hover:shadow-xl transition-all duration-200">
+              <Card className="shadow-lg border-0 rounded-2xl text-center hover:shadow-xl transition-all duration-200">
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <CalculatorOutlined className="text-2xl text-purple-600" />
                 </div>
-                <LazyStatistic
+                <Statistic
                   title="Allocated Shares"
                   value={esopStats.allocatedESOPShares.toLocaleString()}
                   valueStyle={{ color: '#9333ea', fontSize: '1.5rem', fontWeight: 'bold' }}
                 />
-              </LazyCard>
+              </Card>
             </Suspense>
           </Col>
           
           <Col xs={24} sm={12} md={6}>
             <Suspense fallback={<div className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>}>
-              <LazyCard className="shadow-lg border-0 rounded-2xl text-center hover:shadow-xl transition-all duration-200">
+              <Card className="shadow-lg border-0 rounded-2xl text-center hover:shadow-xl transition-all duration-200">
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <DollarOutlined className="text-2xl text-orange-600" />
                 </div>
-                <LazyStatistic
+                <Statistic
                   title="Remaining Pool"
                   value={esopStats.remainingESOPShares.toLocaleString()}
                   valueStyle={{ color: '#f59e0b', fontSize: '1.5rem', fontWeight: 'bold' }}
                 />
-              </LazyCard>
+              </Card>
             </Suspense>
           </Col>
         </Row>
@@ -220,7 +215,7 @@ const ESOPTab: React.FC<ESOPTabProps> = React.memo(({ company, founders, funding
       {/* ESOP Pool Progress */}
       {esopStats && (
         <Suspense fallback={<div className="h-64 bg-slate-200 rounded-2xl animate-pulse"></div>}>
-          <LazyCard className="shadow-lg border-0 rounded-2xl">
+          <Card className="shadow-lg border-0 rounded-2xl">
             <Title level={4} className="mb-4 flex items-center">
               <PieChartOutlined className="mr-2 text-green-600" />
               ESOP Pool Allocation Progress
@@ -234,7 +229,7 @@ const ESOPTab: React.FC<ESOPTabProps> = React.memo(({ company, founders, funding
                     {esopStats.allocatedESOPShares.toLocaleString()} / {esopStats.esopShares.toLocaleString()} shares
                   </Text>
                 </div>
-                <LazyProgress
+                <Progress
                   percent={Math.round((esopStats.allocatedESOPShares / esopStats.esopShares) * 100)}
                   strokeColor={{
                     '0%': '#10b981',
@@ -266,13 +261,13 @@ const ESOPTab: React.FC<ESOPTabProps> = React.memo(({ company, founders, funding
                 </div>
               </div>
             </div>
-          </LazyCard>
+          </Card>
         </Suspense>
       )}
 
       {/* Employee ESOP Calculator */}
       <Suspense fallback={<div className="h-96 bg-slate-200 rounded-2xl animate-pulse"></div>}>
-        <LazyCard className="shadow-lg border-0 rounded-2xl">
+        <Card className="shadow-lg border-0 rounded-2xl">
           <Title level={4} className="mb-4 flex items-center">
             <UserOutlined className="mr-2 text-blue-600" />
             Employee ESOP Calculator
@@ -373,13 +368,13 @@ const ESOPTab: React.FC<ESOPTabProps> = React.memo(({ company, founders, funding
               )}
             </div>
           </div>
-        </LazyCard>
+        </Card>
       </Suspense>
 
       {/* ESOP Pool Details */}
       {esopStats && (
         <Suspense fallback={<div className="h-64 bg-slate-200 rounded-2xl animate-pulse"></div>}>
-          <LazyCard className="shadow-lg border-0 rounded-2xl">
+          <Card className="shadow-lg border-0 rounded-2xl">
             <Title level={4} className="mb-4 flex items-center">
               <InfoCircleOutlined className="mr-2 text-indigo-600" />
               ESOP Pool Details
@@ -428,7 +423,7 @@ const ESOPTab: React.FC<ESOPTabProps> = React.memo(({ company, founders, funding
                 The ESOP pool is designed to attract and retain top talent by offering equity ownership in the company.
               </Text>
             </div>
-          </LazyCard>
+          </Card>
         </Suspense>
       )}
     </div>

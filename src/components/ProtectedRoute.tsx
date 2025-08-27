@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Spin } from 'antd';
@@ -14,6 +14,13 @@ const ProtectedRoute = React.memo(({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  // Handle navigation to login when user is not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/auth/login');
+    }
+  }, [user, loading, router]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -25,9 +32,17 @@ const ProtectedRoute = React.memo(({ children }: ProtectedRouteProps) => {
     );
   }
 
+  // Don't render children if user is not authenticated
+  // The useEffect will handle the redirect
   if (!user) {
-    router.push('/auth/login');
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Spin size="large" />
+          <p className="mt-4 text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;

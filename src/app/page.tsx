@@ -1,12 +1,9 @@
 'use client';
 
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import { Button } from 'antd';
 import { RocketOutlined, CalculatorOutlined, RiseOutlined, TeamOutlined } from '@ant-design/icons';
 import Link from 'next/link';
-
-// Lazy load heavy components
-const LazyButton = lazy(() => Promise.resolve({ default: Button }));
 
 // Loading skeleton components
 const HeroSkeleton = () => (
@@ -62,9 +59,7 @@ export default function HomePage() {
       <div className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-
-
-run            <Suspense fallback={<HeroSkeleton />}>
+            <Suspense fallback={<HeroSkeleton />}>
               <div className="flex justify-center mb-8">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 bg-blue-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   <RocketOutlined className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white" />
@@ -82,14 +77,14 @@ run            <Suspense fallback={<HeroSkeleton />}>
               
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                 <Link href="/auth/signup">
-                  <LazyButton type="primary" size="large" className="h-10 sm:h-12 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto">
+                  <Button type="primary" size="large" className="h-10 sm:h-12 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto">
                     Get Started Free
-                  </LazyButton>
+                  </Button>
                 </Link>
                 <Link href="/auth/login">
-                  <LazyButton size="large" className="h-10 sm:h-12 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto">
+                  <Button size="large" className="h-10 sm:h-12 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto">
                     Sign In
-                  </LazyButton>
+                  </Button>
                 </Link>
               </div>
             </Suspense>
@@ -209,9 +204,9 @@ run            <Suspense fallback={<HeroSkeleton />}>
             Join thousands of entrepreneurs who are using our platform to make informed decisions about their startup&apos;s future.
           </p>
           <Link href="/auth/signup">
-            <LazyButton type="primary" size="large" className="h-12 px-8 text-lg bg-white text-blue-600 hover:bg-blue-50 border-white">
+            <Button type="primary" size="large" className="h-12 px-8 text-lg bg-white text-blue-600 hover:bg-blue-50 border-white">
               Get Started Free
-            </LazyButton>
+            </Button>
           </Link>
         </div>
       </div>

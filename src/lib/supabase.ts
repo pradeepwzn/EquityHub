@@ -13,19 +13,46 @@ if (process.env.NODE_ENV === 'development') {
   }
 }
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    'Missing required Supabase environment variables. ' +
-    'Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env.local file.'
-  );
-  // Don't throw error, just warn - this allows the app to start
+// Create Supabase client with fallback
+let supabase: any;
+
+if (supabaseUrl && supabaseAnonKey) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  } catch (error) {
+    console.error('Failed to create Supabase client:', error);
+    // Fall back to mock client
+    supabase = createMockClient();
+  }
+} else {
+  // Create a mock client for development when env vars are missing
+  if (process.env.NODE_ENV === 'development') {
+    console.warn('Creating mock Supabase client due to missing environment variables');
+    supabase = createMockClient();
+  } else {
+    // In production, throw an error if Supabase is not configured
+    throw new Error('Supabase environment variables are required in production');
+  }
 }
 
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
-);
+function createMockClient() {
+  return {
+    auth: {
+      getSession: async () => ({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signUp: async () => ({ data: null, error: new Error('Supabase not configured') }),
+      signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured') }),
+      signOut: async () => {},
+      resetPasswordForEmail: async () => ({ error: new Error('Supabase not configured') })
+    },
+    from: () => ({
+      insert: async () => ({ error: new Error('Supabase not configured') }),
+      select: async () => ({ data: null, error: new Error('Supabase not configured') })
+    })
+  };
+}
+
+export { supabase };
 
 // Database types for Supabase
 export interface Database {

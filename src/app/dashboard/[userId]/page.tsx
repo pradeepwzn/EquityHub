@@ -1,15 +1,14 @@
 'use client';
 
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSimulatorStore } from '@/store/simulator-store';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import { Company } from '@/types';
 
-// Lazy load components
-const CompanySelector = lazy(() => import('@/components/dashboard/CompanySelector'));
-const PerformanceMonitor = lazy(() => import('@/components/PerformanceMonitor'));
+// Import components directly to fix webpack loading issues
+import CompanySelector from '@/components/dashboard/CompanySelector';
+import PerformanceMonitor from '@/components/PerformanceMonitor';
 
 // Loading skeleton
 const UserDashboardSkeleton = () => (
@@ -28,19 +27,36 @@ const UserDashboardSkeleton = () => (
 export default function UserDashboardPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const userId = params.userId as string;
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const { setCompany } = useSimulatorStore();
 
-  // Security check: Verify user can access this dashboard
+  // Handle "me" route - redirect to actual user ID
   useEffect(() => {
-    if (user?.id !== userId) {
-      // User doesn't match URL, redirect to their own dashboard
-      router.push(`/dashboard/${user?.id || 'me'}`);
+    if (isRedirecting) return;
+    
+    if (userId === 'me' && user?.id) {
+      console.log('Redirecting from /me to user ID:', user.id);
+      setIsRedirecting(true);
+      router.replace(`/dashboard/${user.id}`);
       return;
     }
-  }, [user?.id, userId, router]);
+  }, [userId, user?.id, router, isRedirecting]);
+
+  // Security check: Verify user can access this dashboard
+  useEffect(() => {
+    if (isRedirecting) return;
+    
+    if (!loading && user?.id && userId !== 'me' && user.id !== userId) {
+      // User doesn't match URL, redirect to their own dashboard
+      console.log('Security check: User ID mismatch, redirecting to correct dashboard');
+      setIsRedirecting(true);
+      router.replace(`/dashboard/${user.id}`);
+      return;
+    }
+  }, [user?.id, userId, loading, router, isRedirecting]);
 
   // Handle company selection
   const handleCompanySelect = (selectedCompany: Company) => {
@@ -54,29 +70,34 @@ export default function UserDashboardPage() {
   };
 
   // Show loading state
-  if (!user || user.id !== userId) {
+  if (loading || !user || (userId !== 'me' && user.id !== userId)) {
+    return <UserDashboardSkeleton />;
+  }
+
+  // Quick redirect if user doesn't match
+  if (user.id !== userId && userId !== 'me') {
+    console.log('User ID mismatch, redirecting to correct dashboard');
+    router.push(`/dashboard/${user.id}`);
     return <UserDashboardSkeleton />;
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
-        {/* Performance Monitor */}
-        <Suspense fallback={<div className="h-8 bg-slate-200"></div>}>
-          <PerformanceMonitor />
-        </Suspense>
+    <div className="min-h-screen bg-gray-50">
+      {/* Performance Monitor */}
+      <Suspense fallback={<div className="h-8 bg-slate-200"></div>}>
+        <PerformanceMonitor />
+      </Suspense>
 
-        {/* User Dashboard Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Suspense fallback={<UserDashboardSkeleton />}>
-            <CompanySelector 
-              onCompanySelect={handleCompanySelect}
-              onCreateCompany={handleCreateCompany}
-            />
-          </Suspense>
-        </div>
+      {/* User Dashboard Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Suspense fallback={<UserDashboardSkeleton />}>
+          <CompanySelector 
+            onCompanySelect={handleCompanySelect}
+            onCreateCompany={handleCreateCompany}
+          />
+        </Suspense>
       </div>
-    </ProtectedRoute>
+    </div>
   );
 }
 

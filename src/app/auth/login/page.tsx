@@ -1,35 +1,54 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, Form, Input, Button, Typography, Alert, Divider } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Form, Input, Button, Typography, Alert, Divider, Tag } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserStore } from '@/store/user-store';
 import { useRouter } from 'next/navigation';
+import { AuthErrorBoundary } from '@/components/ErrorBoundary';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 import Link from 'next/link';
 
 const { Title, Text, Paragraph } = Typography;
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { signIn } = useAuth();
+  const { users, fetchAllUsers } = useUserStore();
   const router = useRouter();
+  const { handleAuthError, handleNetworkError } = useErrorHandler();
+
+  useEffect(() => {
+    fetchAllUsers().catch((err) => {
+      console.error('Failed to fetch users:', err);
+      handleNetworkError(err);
+    });
+  }, [fetchAllUsers, handleNetworkError]);
 
   const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
     setError(null);
 
     try {
+      // Immediate feedback - show loading state
+      console.log('Starting sign in process...');
+      
       const { error } = await signIn(values.email, values.password);
       
       if (error) {
         setError(error.message);
+        setLoading(false);
       } else {
+        console.log('Sign in successful, redirecting...');
+        // Use push instead of replace for faster navigation
         router.push('/dashboard');
+        // Keep loading state until redirect completes
       }
-    } catch {
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
+    } catch (err) {
+      console.error('Sign in error:', err);
+      handleAuthError(err);
       setLoading(false);
     }
   };
@@ -69,6 +88,44 @@ export default function LoginPage() {
               />
             )}
 
+            {/* Available Users for Testing */}
+            {users.length > 0 && (
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <Text className="text-blue-800 font-semibold block mb-2">
+                  Available Users for Testing:
+                </Text>
+                <div className="space-y-2">
+                  {users.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between">
+                      <div>
+                        <Text className="text-blue-700">{user.email}</Text>
+                        <Text className="text-blue-500 text-sm ml-2">({user.username})</Text>
+                      </div>
+                      <Tag 
+                        color="blue" 
+                        className="cursor-pointer"
+                        onClick={() => {
+                          const form = document.querySelector('form');
+                          if (form) {
+                            const emailInput = form.querySelector('input[name="email"]') as HTMLInputElement;
+                            if (emailInput) {
+                              emailInput.value = user.email;
+                              emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                          }
+                        }}
+                      >
+                        Use
+                      </Tag>
+                    </div>
+                  ))}
+                </div>
+                <Text className="text-blue-600 text-xs mt-2 block">
+                  Click "Use" to auto-fill email, or enter any email from the list above.
+                </Text>
+              </div>
+            )}
+
             <Form
               layout="vertical"
               onFinish={onFinish}
@@ -86,6 +143,7 @@ export default function LoginPage() {
                   prefix={<MailOutlined className="text-gray-400" />}
                   placeholder="Enter your email"
                   className="rounded-lg"
+                  autoComplete="email"
                 />
               </Form.Item>
 
@@ -98,6 +156,7 @@ export default function LoginPage() {
                   prefix={<LockOutlined className="text-gray-400" />}
                   placeholder="Enter your password"
                   className="rounded-lg"
+                  autoComplete="current-password"
                   iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                 />
               </Form.Item>
@@ -120,8 +179,15 @@ export default function LoginPage() {
                   loading={loading}
                   className="w-full h-12 text-lg font-semibold rounded-lg shadow-lg"
                 >
-                  Sign In
+                  {loading ? 'Signing In...' : 'Sign In'}
                 </Button>
+                {loading && (
+                  <div className="text-center mt-2">
+                    <Text className="text-blue-600 text-sm">
+                      Authenticating and redirecting...
+                    </Text>
+                  </div>
+                )}
               </Form.Item>
             </Form>
 
@@ -154,5 +220,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <AuthErrorBoundary>
+      <LoginPageContent />
+    </AuthErrorBoundary>
   );
 }

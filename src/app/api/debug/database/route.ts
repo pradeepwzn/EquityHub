@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      // You could decode the JWT here to get the user ID
+      // You could get the user ID from session or query params
       // For now, we'll query all data
     }
 

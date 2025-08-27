@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createProtectedRoute } from '@/lib/jwt-utils';
 import { supabase } from '@/lib/supabase';
 
-// PUT /api/protected/scenarios/[id]
-export const PUT = createProtectedRoute(async (request: NextRequest, userId: string, params: { id: string }) => {
+// PUT /api/protected/scenarios/[id]?userId=xxx
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
+    const userId = request.nextUrl.searchParams.get('userId');
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'User ID is required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { name, config } = body;
 
@@ -67,12 +75,20 @@ export const PUT = createProtectedRoute(async (request: NextRequest, userId: str
       { status: 500 }
     );
   }
-});
+}
 
-// DELETE /api/protected/scenarios/[id]
-export const DELETE = createProtectedRoute(async (request: NextRequest, userId: string, params: { id: string }) => {
+// DELETE /api/protected/scenarios/[id]?userId=xxx
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
+    const userId = request.nextUrl.searchParams.get('userId');
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'User ID is required' },
+        { status: 401 }
+      );
+    }
 
     // Verify the scenario belongs to a company owned by the user
     const { data: scenario, error: fetchError } = await supabase
@@ -118,4 +134,4 @@ export const DELETE = createProtectedRoute(async (request: NextRequest, userId: 
       { status: 500 }
     );
   }
-});
+}

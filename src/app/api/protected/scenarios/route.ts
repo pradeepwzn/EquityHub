@@ -1,17 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createProtectedRoute } from '@/lib/jwt-utils';
 import { supabase } from '@/lib/supabase';
 
-// GET /api/protected/scenarios?companyId=xxx
-export const GET = createProtectedRoute(async (request: NextRequest, userId: string) => {
+// GET /api/protected/scenarios?companyId=xxx&userId=xxx
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
+    const userId = searchParams.get('userId');
 
     if (!companyId) {
       return NextResponse.json(
         { success: false, error: 'Company ID is required' },
         { status: 400 }
+      );
+    }
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'User ID is required' },
+        { status: 401 }
       );
     }
 
@@ -57,11 +64,20 @@ export const GET = createProtectedRoute(async (request: NextRequest, userId: str
       { status: 500 }
     );
   }
-});
+}
 
-// POST /api/protected/scenarios
-export const POST = createProtectedRoute(async (request: NextRequest, userId: string) => {
+// POST /api/protected/scenarios?userId=xxx
+export async function POST(request: NextRequest) {
   try {
+    const userId = request.nextUrl.searchParams.get('userId');
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'User ID is required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { companyId, name, config } = body;
 
@@ -118,4 +134,4 @@ export const POST = createProtectedRoute(async (request: NextRequest, userId: st
       { status: 500 }
     );
   }
-});
+}

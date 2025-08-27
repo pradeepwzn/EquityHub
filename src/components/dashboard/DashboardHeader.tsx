@@ -65,8 +65,8 @@ const DashboardHeader = React.memo(({ company, founders, fundingRounds, onSignOu
 
   // Memoize user display name
   const userDisplayName = useMemo(() => {
-    return user?.user_metadata?.username || user?.email?.split('@')[0] || 'User';
-  }, [user?.user_metadata?.username, user?.email]);
+    return user?.username || user?.email?.split('@')[0] || 'User';
+  }, [user?.username, user?.email]);
 
   // Load all companies for switcher
   useEffect(() => {
@@ -177,20 +177,12 @@ const DashboardHeader = React.memo(({ company, founders, fundingRounds, onSignOu
                 <div className="group-hover:transform group-hover:translate-x-1 transition-all duration-300 min-w-0">
                   <Typography.Title 
                     level={3} 
-                    className="text-white mb-1 sm:mb-2 font-bold group-hover:text-blue-50 transition-colors duration-300 text-base sm:text-lg md:text-xl lg:text-2xl leading-tight"
-                    style={{ 
-                      fontSize: 'clamp(1.125rem, 2.5vw, 1.75rem)',
-                      lineHeight: '1.2'
-                    }}
+                    className="text-white mb-1 sm:mb-2 font-bold group-hover:text-blue-50 transition-colors duration-300 text-base sm:text-lg md:text-xl lg:text-2xl leading-tight dashboard-header-title"
                   >
                     Startup Value Simulator
                   </Typography.Title>
                   <Typography.Text 
-                    className="text-blue-100 group-hover:text-blue-50 transition-colors duration-300 block leading-tight"
-                    style={{ 
-                      fontSize: 'clamp(0.875rem, 1.5vw, 1.125rem)',
-                      lineHeight: '1.3'
-                    }}
+                    className="text-blue-100 group-hover:text-blue-50 transition-colors duration-300 block leading-tight dashboard-header-subtitle"
                   >
                     Professional Cap Table & Exit Scenario Calculator
                   </Typography.Text>

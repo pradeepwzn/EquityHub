@@ -2,6 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Browser compatibility fixes */
+* {
+  /* Fix user-select for Safari */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection for input fields and content areas */
+input, textarea, [contenteditable], .selectable-text {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Fix text-decoration-skip for better browser support */
+a, .link {
+  text-decoration-skip-ink: auto;
+}
+
+/* Remove fetchpriority for unsupported browsers */
+@supports not (fetchpriority: high) {
+  [fetchpriority] {
+    fetchpriority: unset;
+  }
+}
+
 /* Custom table styles */
 .custom-table .ant-table-thead > tr > th {
   background-color: #f8fafc;
@@ -319,3 +348,88 @@ html {
     font-size: 13px;
   }
 }
+
+/* Moved inline styles to external CSS */
+.performance-monitor-card {
+  width: 300px;
+}
+
+.performance-time-excellent {
+  color: #16a34a;
+}
+
+.performance-time-good {
+  color: #f59e0b;
+}
+
+.performance-time-poor {
+  color: #dc2626;
+}
+
+.dashboard-header-title {
+  font-size: clamp(1.125rem, 2.5vw, 1.75rem);
+}
+
+.dashboard-header-subtitle {
+  font-size: clamp(0.875rem, 1.5vw, 1.125rem);
+}
+
+.sql-editor-textarea {
+  font-family: monospace;
+}
+
+.scenario-comparison-select {
+  width: 100%;
+}
+
+.scenario-color-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.service-worker-debug {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 9999;
+}
+
+.service-worker-debug.registered {
+  background: #4caf50;
+}
+
+.service-worker-debug.error {
+  background: #f44336;
+}
+
+.service-worker-debug.registering {
+  background: #ff9800;
+}
+
+/* Dynamic color classes for scenario comparison */
+.scenario-color-0 { color: #3b82f6; }
+.scenario-color-1 { color: #ef4444; }
+.scenario-color-2 { color: #10b981; }
+.scenario-color-3 { color: #f59e0b; }
+.scenario-color-4 { color: #8b5cf6; }
+.scenario-color-5 { color: #06b6d4; }
+.scenario-color-6 { color: #84cc16; }
+.scenario-color-7 { color: #f97316; }
+.scenario-color-8 { color: #ec4899; }
+.scenario-color-9 { color: #6366f1; }
+
+.scenario-bg-color-0 { background-color: #3b82f6; }
+.scenario-bg-color-1 { background-color: #ef4444; }
+.scenario-bg-color-2 { background-color: #10b981; }
+.scenario-bg-color-3 { background-color: #f59e0b; }
+.scenario-bg-color-4 { background-color: #8b5cf6; }
+.scenario-bg-color-5 { background-color: #06b6d4; }
+.scenario-bg-color-6 { background-color: #84cc16; }
+.scenario-bg-color-7 { background-color: #f97316; }
+.scenario-bg-color-8 { background-color: #ec4899; }
+.scenario-bg-color-9 { background-color: #6366f1; }
