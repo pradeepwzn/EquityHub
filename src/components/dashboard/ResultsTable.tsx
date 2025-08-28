@@ -226,3 +226,9 @@ const ResultsTable: React.FC<ResultsTableProps> = React.memo(({
 ResultsTable.displayName = 'ResultsTable';
 
 export default ResultsTable;
+
+
+
+
+
+

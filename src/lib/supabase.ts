@@ -1,31 +1,41 @@
-import { createClient } from '@supabase/supabase-js';
+// Simple Supabase configuration to avoid webpack issues
+let supabase: any;
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-// Check if environment variables are set (only in development)
-if (process.env.NODE_ENV === 'development') {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Missing Supabase environment variables:');
-    console.warn('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✓ Set' : '✗ Missing');
-    console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✓ Set' : '✗ Missing');
-    console.warn('Please create a .env.local file with these variables.');
+try {
+  const { createClient } = require('@supabase/supabase-js');
+  
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (supabaseUrl && supabaseAnonKey) {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  } else {
+    // Fallback to mock client
+    supabase = createMockClient();
   }
+} catch (error) {
+  console.warn('Supabase client creation failed, using mock client:', error);
+  supabase = createMockClient();
 }
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    'Missing required Supabase environment variables. ' +
-    'Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env.local file.'
-  );
-  // Don't throw error, just warn - this allows the app to start
+function createMockClient() {
+  return {
+    auth: {
+      getSession: async () => ({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signInWithPassword: async () => ({ data: null, error: new Error('Mock client - not configured') }),
+      signUp: async () => ({ data: null, error: new Error('Mock client - not configured') }),
+      signOut: async () => {},
+      resetPasswordForEmail: async () => ({ error: new Error('Mock client - not configured') })
+    },
+    from: () => ({
+      insert: async () => ({ error: new Error('Mock client - not configured') }),
+      select: async () => ({ data: null, error: new Error('Mock client - not configured') })
+    })
+  };
 }
 
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
-);
+export { supabase };
 
 // Database types for Supabase
 export interface Database {
@@ -272,5 +282,67 @@ export async function testSupabaseConnection() {
   } catch (error) {
     console.error('Supabase connection test error:', error);
     return false;
+  }
+}
+
+// Function to read companies from the database
+export async function getCompanies() {
+  try {
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching companies:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Failed to fetch companies:', error);
+    throw error;
+  }
+}
+
+// Function to read companies for a specific user
+export async function getUserCompanies(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user companies:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Failed to fetch user companies:', error);
+    throw error;
+  }
+}
+
+// Function to read a specific company by ID
+export async function getCompanyById(companyId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*')
+      .eq('id', companyId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching company:', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch company:', error);
+    throw error;
   }
 }

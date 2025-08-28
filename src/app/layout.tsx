@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { AuthProvider } from '@/contexts/AuthContext';
 import ClientProviders from '@/components/ClientProviders';
-import PerformanceMonitor from '@/components/PerformanceMonitor';
-import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,13 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
+        <ErrorBoundary>
           <ClientProviders>
             {children}
-            <PerformanceMonitor />
-            <ServiceWorkerRegistration />
           </ClientProviders>
-        </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

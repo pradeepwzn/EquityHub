@@ -128,6 +128,10 @@ const ScenarioComparisonTab = React.memo(({ companyId, scenarios, onScenarioSele
     return colors[index % colors.length];
   }, []);
 
+  const getScenarioColorClass = useCallback((index: number) => {
+    return `scenario-color-${index % 10}`;
+  }, []);
+
   // Table columns for comparison
   const comparisonColumns = useMemo(() => {
     const columns: any[] = [
@@ -152,22 +156,22 @@ const ScenarioComparisonTab = React.memo(({ companyId, scenarios, onScenarioSele
         key: scenarioId,
         width: 200,
         render: (value: any, record: any) => {
-          const color = getScenarioColor(index);
+          const colorClass = getScenarioColorClass(index);
           if (record.type === 'currency') {
             return (
-              <Typography.Text strong style={{ color }}>
+              <Typography.Text strong className={colorClass}>
                 {formatCurrency(value)}
               </Typography.Text>
             );
           } else if (record.type === 'percentage') {
             return (
-              <Typography.Text strong style={{ color }}>
+              <Typography.Text strong className={colorClass}>
                 {formatPercentage(value)}
               </Typography.Text>
             );
           } else if (record.type === 'number') {
             return (
-              <Typography.Text strong style={{ color }}>
+              <Typography.Text strong className={colorClass}>
                 {value.toLocaleString()}
               </Typography.Text>
             );
@@ -316,9 +320,8 @@ const ScenarioComparisonTab = React.memo(({ companyId, scenarios, onScenarioSele
               placeholder="Choose 2-3 scenarios to compare"
               value={selectedScenarios}
               onChange={handleScenarioSelect}
-              style={{ width: '100%' }}
+              className="scenario-comparison-select h-12 text-lg"
               maxTagCount={3}
-              className="h-12 text-lg"
               options={scenarios.map(scenario => ({
                 label: (
                   <div className="flex items-center justify-between">
@@ -380,7 +383,7 @@ const ScenarioComparisonTab = React.memo(({ companyId, scenarios, onScenarioSele
                         return (
                           <div key={scenarioId} className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <Typography.Text strong style={{ color }}>
+                              <Typography.Text strong className={getScenarioColorClass(index)}>
                                 {getScenarioName(scenarioId)}
                               </Typography.Text>
                               <Typography.Text className="text-slate-600">
@@ -418,7 +421,7 @@ const ScenarioComparisonTab = React.memo(({ companyId, scenarios, onScenarioSele
                         return (
                           <div key={scenarioId} className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <Typography.Text strong style={{ color }}>
+                              <Typography.Text strong className={getScenarioColorClass(index)}>
                                 {getScenarioName(scenarioId)}
                               </Typography.Text>
                               <Typography.Text className="text-slate-600">
@@ -453,8 +456,8 @@ const ScenarioComparisonTab = React.memo(({ companyId, scenarios, onScenarioSele
                     return (
                       <div key={scenarioId} className="space-y-3">
                         <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }}></div>
-                          <Typography.Text strong style={{ color }}>
+                          <div className={`w-3 h-3 rounded-full scenario-color-indicator scenario-bg-color-${index % 10}`}></div>
+                          <Typography.Text strong className={getScenarioColorClass(index)}>
                             {getScenarioName(scenarioId)}
                           </Typography.Text>
                         </div>
@@ -462,7 +465,7 @@ const ScenarioComparisonTab = React.memo(({ companyId, scenarios, onScenarioSele
                           {data.founderReturns.map((founder: any, founderIndex: number) => (
                             <div key={founderIndex} className="flex justify-between items-center text-sm">
                               <span className="text-slate-600">{founder.name}</span>
-                              <span className="font-semibold" style={{ color }}>
+                              <span className={`font-semibold ${getScenarioColorClass(index)}`}>
                                 {formatCurrency(founder.exitValue)}
                               </span>
                             </div>

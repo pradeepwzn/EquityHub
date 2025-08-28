@@ -80,3 +80,9 @@ const PieChart: React.FC<PieChartProps> = ({ data, title, height }) => {
 };
 
 export default PieChart;
+
+
+
+
+
+

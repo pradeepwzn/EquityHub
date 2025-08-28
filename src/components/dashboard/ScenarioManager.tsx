@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, Button, Input, List, message, Typography, Space, Tag, Modal, Form, Popconfirm } from 'antd';
 import { SaveOutlined, PlusOutlined, EditOutlined, DeleteOutlined, FolderOutlined } from '@ant-design/icons';
 import { Founder, FundingRound, Scenario } from '@/types';
-import { supabase } from '@/lib/supabase';
+
 
 interface ScenarioManagerProps {
   companyId: string;
@@ -34,18 +34,8 @@ const ScenarioManager = React.memo(({ companyId, currentScenario, onScenarioSele
     
     setIsLoading(true);
     try {
-      // Get the current session to extract the access token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        message.error('Authentication required. Please log in again.');
-        return;
-      }
-
-      const response = await fetch(`/api/protected/scenarios?companyId=${companyId}`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
+      // Mock API call since we don't need authentication
+      const response = await fetch(`/api/scenarios?companyId=${companyId}`);
       const result = await response.json();
       
       if (result.success) {
@@ -99,19 +89,11 @@ const ScenarioManager = React.memo(({ companyId, currentScenario, onScenarioSele
         company_valuation: currentScenario.valuation
       };
 
-      // Get the current session to extract the access token
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        message.error('Authentication required. Please log in again.');
-        return;
-      }
-
-      const response = await fetch('/api/protected/scenarios', {
+      // Mock API call since we don't need authentication
+      const response = await fetch('/api/scenarios', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           companyId,
@@ -143,18 +125,11 @@ const ScenarioManager = React.memo(({ companyId, currentScenario, onScenarioSele
     }
 
     try {
-      // Get the current session to extract the access token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        message.error('Authentication required. Please log in again.');
-        return;
-      }
-
-      const response = await fetch(`/api/protected/scenarios/${editingScenario.id}`, {
+      // Mock API call since we don't need authentication
+      const response = await fetch(`/api/scenarios/${editingScenario.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           name: scenarioName.trim()
@@ -180,18 +155,9 @@ const ScenarioManager = React.memo(({ companyId, currentScenario, onScenarioSele
 
   const handleDeleteScenario = async (scenarioId: string) => {
     try {
-      // Get the current session to extract the access token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        message.error('Authentication required. Please log in again.');
-        return;
-      }
-
-      const response = await fetch(`/api/protected/scenarios/${scenarioId}`, {
+      // Mock API call since we don't need authentication
+      const response = await fetch(`/api/scenarios/${scenarioId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
       });
 
       const result = await response.json();

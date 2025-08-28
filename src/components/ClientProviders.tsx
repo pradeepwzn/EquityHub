@@ -1,19 +1,16 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { ConfigProvider } from 'antd';
+import React from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 
 interface ClientProvidersProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export default function ClientProviders({ children }: ClientProvidersProps) {
   return (
     <AuthProvider>
-      <ConfigProvider>
-        {children}
-      </ConfigProvider>
+      {children}
     </AuthProvider>
   );
 }

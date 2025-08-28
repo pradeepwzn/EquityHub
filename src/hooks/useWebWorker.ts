@@ -22,6 +22,7 @@ export const useWebWorker = () => {
   useEffect(() => {
     if (typeof window !== 'undefined' && typeof Worker !== 'undefined') {
       try {
+        // Only create worker if the file exists
         workerRef.current = new Worker('/worker.js');
         
         workerRef.current.onmessage = (event: MessageEvent<WorkerResult>) => {
@@ -40,6 +41,7 @@ export const useWebWorker = () => {
         workerRef.current.onerror = (error) => {
           console.error('Web Worker error:', error);
           setIsCalculating(false);
+          setIsReady(false);
         };
         
         return () => {
@@ -49,6 +51,7 @@ export const useWebWorker = () => {
         };
       } catch (error) {
         console.error('Failed to create Web Worker:', error);
+        setIsReady(false);
       }
     }
   }, []);

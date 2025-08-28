@@ -1,11 +1,6 @@
 import { useSimulatorStore } from '@/store/simulator-store';
 import { Company, Founder, FundingRound, ExitResults, Scenario } from '@/types';
 
-/**
- * Optimized hooks for using the simulator store
- * These hooks only subscribe to specific parts of the store to reduce re-renders
- */
-
 // Hook for company data only
 export const useCompany = (): Company | null => {
   return useSimulatorStore((state) => state.company);
@@ -57,6 +52,3 @@ export const useLoadUserCompanies = () => useSimulatorStore((state) => state.loa
 export const useClearError = () => useSimulatorStore((state) => state.clearError);
 export const useLoadScenarios = () => useSimulatorStore((state) => state.loadScenarios);
 export const useSaveCurrentScenario = () => useSimulatorStore((state) => state.saveCurrentScenario);
-
-// Additional action hooks can be added here as needed
-// All action hooks return stable function references that don't cause re-renders
