@@ -3,6 +3,7 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { useCompanyStore } from '@/store/company-store';
 import CompanyManagement from '@/components/company/CompanyManagement';
+import FounderManagement from '@/components/founder/FounderManagement';
 
 // Lazy load dashboard components
 const DashboardHeader = lazy(() => import('@/components/dashboard/DashboardHeader'));
@@ -59,6 +60,7 @@ const DashboardSkeleton = () => (
 export default function DashboardPage() {
   const { currentCompany } = useCompanyStore();
   const [showCompanyManagement, setShowCompanyManagement] = useState(false);
+  const [showFounderManagement, setShowFounderManagement] = useState(false);
 
   const handleCompanySelected = (company: any) => {
     // Company is now selected in the store
@@ -68,6 +70,12 @@ export default function DashboardPage() {
 
   const handleBackToCompanyManagement = () => {
     setShowCompanyManagement(true);
+    setShowFounderManagement(false);
+  };
+
+  const handleBackToMainDashboard = () => {
+    setShowCompanyManagement(false);
+    setShowFounderManagement(false);
   };
 
   // Show company management if no company is selected or if user wants to manage companies
@@ -91,6 +99,25 @@ export default function DashboardPage() {
         <div className="fixed bottom-4 left-4 bg-green-500 text-white p-4 rounded-lg shadow-lg">
           <div className="font-bold">✅ Module 2 Active!</div>
           <div className="text-sm">Company Management System</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show founder management if user wants to manage founders
+  if (showFounderManagement) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Performance Monitor */}
+        <Suspense fallback={<div className="h-8 bg-slate-200"></div>}>
+          <PerformanceMonitor />
+        </Suspense>
+
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <FounderManagement
+            onBack={handleBackToMainDashboard}
+          />
         </div>
       </div>
     );
@@ -120,7 +147,7 @@ export default function DashboardPage() {
         />
       </Suspense>
 
-      {/* Company Management Button */}
+      {/* Management Buttons */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <button
           onClick={() => setShowCompanyManagement(true)}
@@ -131,6 +158,16 @@ export default function DashboardPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           Manage Companies
+        </button>
+        
+        <button
+          onClick={() => setShowFounderManagement(true)}
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 hover:text-green-700 transition-colors duration-200"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+          </svg>
+          Manage Founders
         </button>
       </div>
 
@@ -160,10 +197,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Module Status */}
-      <div className="fixed bottom-4 right-4 bg-blue-500 text-white p-3 rounded-lg text-sm">
-        <div className="font-bold">🏢 Module 2 Active</div>
+      <div className="fixed bottom-4 right-4 bg-green-500 text-white p-3 rounded-lg text-sm">
+        <div className="font-bold">👥 Module 3 Active</div>
         <div>Company: {currentCompany.name}</div>
-        <div>Status: Ready for Module 3</div>
+        <div>Status: Founder Management Ready</div>
       </div>
     </div>
   );
