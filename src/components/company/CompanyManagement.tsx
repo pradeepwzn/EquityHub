@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Card, Typography, Button, Modal, message, Popconfirm } from 'antd';
-import { BankOutlined, PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { BankOutlined, PlusOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Company } from '@/types';
 import { useCompanyStore } from '@/store/company-store';
 import CompanyCreationForm from './CompanyCreationForm';

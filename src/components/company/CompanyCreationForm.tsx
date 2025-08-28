@@ -99,6 +99,7 @@ const CompanyCreationForm: React.FC<CompanyCreationFormProps> = ({
           <Form.Item
             name="name"
             label={<span className="text-slate-700 font-medium">Company Name</span>}
+            help="Enter your company's legal or trading name (e.g., 'Tech Startup Inc' or 'Innovation Labs')"
             rules={[
               { required: true, message: 'Please enter company name' },
               { min: 2, message: 'Company name must be at least 2 characters' },
@@ -116,6 +117,7 @@ const CompanyCreationForm: React.FC<CompanyCreationFormProps> = ({
             <Form.Item
               name="total_shares"
               label={<span className="text-slate-700 font-medium">Total Shares</span>}
+              help="Enter the total number of shares issued by your company (e.g., 10,000,000 for 10M shares)"
               rules={[
                 { required: true, message: 'Please enter total shares' },
                 { type: 'number', min: 1000, message: 'Total shares must be at least 1,000' },
@@ -124,9 +126,12 @@ const CompanyCreationForm: React.FC<CompanyCreationFormProps> = ({
             >
               <InputNumber
                 className="w-full h-12 text-base border-slate-200 rounded-lg hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                placeholder="10,000,000"
+                placeholder="Enter total shares"
                 formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
+                parser={(value) => {
+                  const parsed = parseInt(value!.replace(/\$\s?|(,*)/g, '')) || 1000;
+                  return Math.max(1000, Math.min(1000000000, parsed)) as 1000 | 1000000000;
+                }}
                 min={1000}
                 max={1000000000}
               />
@@ -135,6 +140,7 @@ const CompanyCreationForm: React.FC<CompanyCreationFormProps> = ({
             <Form.Item
               name="valuation"
               label={<span className="text-slate-700 font-medium">Company Valuation ($)</span>}
+              help="Enter the current market value of your company (e.g., $500,000 for early-stage, $5M+ for growth-stage)"
               rules={[
                 { required: true, message: 'Please enter company valuation' },
                 { type: 'number', min: 1000, message: 'Valuation must be at least $1,000' },
@@ -143,9 +149,12 @@ const CompanyCreationForm: React.FC<CompanyCreationFormProps> = ({
             >
               <InputNumber
                 className="w-full h-12 text-base border-slate-200 rounded-lg hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                placeholder="1,000,000"
+                placeholder="Enter company valuation"
                 formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
+                parser={(value) => {
+                  const parsed = parseInt(value!.replace(/\$\s?|(,*)/g, '')) || 1000;
+                  return Math.max(1000, Math.min(1000000000000, parsed)) as 1000 | 1000000000000;
+                }}
                 min={1000}
                 max={1000000000000}
               />
@@ -155,6 +164,7 @@ const CompanyCreationForm: React.FC<CompanyCreationFormProps> = ({
           <Form.Item
             name="esop_pool"
             label={<span className="text-slate-700 font-medium">ESOP Pool (%)</span>}
+            help="Enter the percentage of shares reserved for employee stock options (typically 10-20% for startups)"
             rules={[
               { required: true, message: 'Please enter ESOP pool percentage' },
               { type: 'number', min: 0, message: 'ESOP pool must be at least 0%' },
@@ -163,7 +173,7 @@ const CompanyCreationForm: React.FC<CompanyCreationFormProps> = ({
           >
             <InputNumber
               className="w-full h-12 text-base border-slate-200 rounded-lg hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-              placeholder="10"
+              placeholder="Enter ESOP percentage"
               min={0}
               max={100}
               addonAfter="%"
